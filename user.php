@@ -6,6 +6,7 @@ class User {
   public $email;
   public $firstname;
   public $lastname;
+  public $password;
   private $isConnected;
 
   public function __construct() {
@@ -54,12 +55,9 @@ class User {
   public function connect($login, $password) {
     // Code de connexion de l'utilisateur en base de données
 
-    // Mettre à jour les attributs de l'objet avec les valeurs de l'utilisateur connecté
-    $this->id = $id;
-    $this->login = $login;
-    $this->email = $email;
-    $this->firstname = $firstname;
-    $this->lastname = $lastname;
+     $this->login = $login;
+    $this->password = $password;
+
     $this->isConnected = true;
   }
 
@@ -120,9 +118,21 @@ class User {
 $user = new User();
 
 // Test de la méthode register avec des données de test
-$infos = $user->register('test', 'test', 'test@example.com', 'Test', 'User');
+// $infos = $user->register('test', 'test', 'test@example.com', 'Test', 'User');
 
 // Affichage des informations de l'utilisateur créé
-print_r($infos);
+// print_r($infos);
+
+// Test de la méthode connect avec des données de test
+$user->connect('test', 'test');
+
+// Vérification de la connexion de l'utilisateur
+if ($user->isConnected()) {
+  echo "Utilisateur connecté\n";
+} else {
+  echo "Utilisateur non connecté\n";
+}
+
+
 
 ?>
