@@ -9,7 +9,11 @@ class User {
   private $isConnected;
 
   public function __construct() {
-    $this->isConnected = false;
+    $this->id = 0;
+    $this->login = '';
+    $this->email = '';
+    $this->firstname = '';
+    $this->lastname = '';
   }
 
   public function register($login, $password, $email, $firstname, $lastname) {
@@ -97,6 +101,7 @@ class User {
 
 }
 
-
+register("Tom13", "azerty",
+"thomas@gmail.com", "Thomas", "DUPONT")
 
 ?>
