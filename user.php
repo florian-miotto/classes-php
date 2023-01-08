@@ -17,14 +17,30 @@ class User {
   }
 
   public function register($login, $password, $email, $firstname, $lastname) {
-    // Code de création de l'utilisateur en base de données
-
-    // Mettre à jour les attributs de l'objet avec les valeurs de l'utilisateur créé
-    $this->id = $id;
-    $this->login = $login;
-    $this->email = $email;
-    $this->firstname = $firstname;
-    $this->lastname = $lastname;
+   
+        // Connexion à la base de données
+        $mysqli = new mysqli('localhost', 'root', '', 'classes');
+    var_dump($mysqli );
+        // Préparation de la requête d'insertion
+        $stmt = $mysqli->prepare("INSERT INTO utilisateurs (login, password, email, firstname, lastname) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param('sssss', $login, $password, $email, $firstname, $lastname);
+    
+        // Exécution de la requête
+        $stmt->execute();
+    
+        // Récupération de l'ID de l'utilisateur créé
+        $id = $mysqli->insert_id;
+    
+        // Mise à jour des attributs de l'objet avec les valeurs de l'utilisateur créé
+        $this->id = $id;
+        $this->login = $login;
+        $this->email = $email;
+        $this->firstname = $firstname;
+        $this->lastname = $lastname;
+    
+        // Fermeture de la requête et de la connexion à la base de données
+        $stmt->close();
+        $mysqli->close();
 
     return array(
       'id' => $this->id,
@@ -101,7 +117,12 @@ class User {
 
 }
 
-register("Tom13", "azerty",
-"thomas@gmail.com", "Thomas", "DUPONT")
+$user = new User();
+
+// Test de la méthode register avec des données de test
+$infos = $user->register('test', 'test', 'test@example.com', 'Test', 'User');
+
+// Affichage des informations de l'utilisateur créé
+print_r($infos);
 
 ?>
