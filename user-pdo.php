@@ -121,6 +121,30 @@ class Userpdo {
 }
 
 
+function update($login, $password, $email, $firstname, $lastname) {
+  // Connect to the database
+  $dbh = PDO('mysql:host=localhost;dbname=classes', 'root', '');
+  
+  // Hash the password for storage in the database
+  $password = password_hash($password, PASSWORD_DEFAULT);
+
+  // Prepare the SQL statement
+  $stmt = $dbh->prepare("UPDATE users SET password = :password, email = :email, firstname = :firstname, lastname = :lastname WHERE login = :login");
+
+  // Bind the parameters
+  $stmt->bindParam(':login', $login);
+  $stmt->bindParam(':password', $password);
+  $stmt->bindParam(':email', $email);
+  $stmt->bindParam(':firstname', $firstname);
+  $stmt->bindParam(':lastname', $lastname);
+
+  // Execute the statement
+  $stmt->execute();
+
+  // Close the connection
+  $dbh = null;
+}
+
 }
 $user = new Userpdo();
 // $user->connect('test', 'test');
