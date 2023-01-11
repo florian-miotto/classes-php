@@ -144,6 +144,109 @@ function update($login, $password, $email, $firstname, $lastname) {
   // Close the connection
   $dbh = null;
 }
+function getAllInfos() {
+ 
+  $dbh = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
+
+  
+  $stmt = $dbh->prepare("SELECT * FROM users");
+
+ 
+  $stmt->execute();
+
+ 
+  $rows = $stmt->fetchAll();
+
+ 
+  $dbh = null;
+
+  
+  return $rows;
+}
+
+
+
+function getLogin() {
+  
+  $dbh = new PDO('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+  
+  $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
+
+
+  $stmt = $dbh->prepare("SELECT login FROM users WHERE id = :id");
+
+  $stmt->bindParam(':id', $id);
+
+  $stmt->execute();
+
+  $row = $stmt->fetch();
+
+  $dbh = null;
+
+  return $row['login'];
+}
+
+public function getEmail() {
+  $dbh = new PDO('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+  
+  $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
+
+
+  $stmt = $dbh->prepare("SELECT login FROM users WHERE id = :id");
+
+  $stmt->bindParam(':id', $id);
+
+  $stmt->execute();
+
+  $row = $stmt->fetch();
+
+  $dbh = null;
+
+  return $row['email'];
+}
+
+public function getFirstname() {
+  $dbh = new PDO('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+  
+  $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
+
+
+  $stmt = $dbh->prepare("SELECT login FROM users WHERE id = :id");
+
+  $stmt->bindParam(':id', $id);
+
+  $stmt->execute();
+
+  $row = $stmt->fetch();
+
+  $dbh = null;
+
+  return $row['firstname'];
+}
+
+public function getLastname() {
+  $dbh = new PDO('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+  
+  $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
+
+
+  $stmt = $dbh->prepare("SELECT login FROM users WHERE id = :id");
+
+  $stmt->bindParam(':id', $id);
+
+  $stmt->execute();
+
+  $row = $stmt->fetch();
+
+  $dbh = null;
+
+  return $row['lastname'];
+}
+
+
+
+
+
 
 }
 $user = new Userpdo();

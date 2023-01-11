@@ -160,20 +160,98 @@ class User {
     );
   }
 
-  public function getLogin() {
-    return $this->login;
-  }
+  function getLogin($id) {
+
+    $mysqli = new mysqli('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+
+    if ($mysqli->connect_errno) {
+        die("Error connecting to the database: " . $mysqli->connect_error);
+    }
+    $stmt = $mysqli->prepare("SELECT login FROM users WHERE id = ?");
+
+    $stmt->bind_param("i", $id);
+
+    $stmt->execute();
+
+    $stmt->bind_result($login);
+
+    $stmt->fetch();
+
+    $stmt->close();
+
+    $mysqli->close();
+
+    return $login;
+}
+
 
   public function getEmail() {
-    return $this->email;
+    $mysqli = new mysqli('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+
+    if ($mysqli->connect_errno) {
+        die("Error connecting to the database: " . $mysqli->connect_error);
+    }
+    $stmt = $mysqli->prepare("SELECT Email FROM users WHERE id = ?");
+
+    $stmt->bind_param("i", $id);
+
+    $stmt->execute();
+
+    $stmt->bind_result($Email);
+
+    $stmt->fetch();
+
+    $stmt->close();
+
+    $mysqli->close();
+
+    return $Email;
   }
 
   public function getFirstname() {
-    return $this->firstname;
+    $mysqli = new mysqli('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+
+    if ($mysqli->connect_errno) {
+        die("Error connecting to the database: " . $mysqli->connect_error);
+    }
+    $stmt = $mysqli->prepare("SELECT firstname FROM users WHERE id = ?");
+
+    $stmt->bind_param("i", $id);
+
+    $stmt->execute();
+
+    $stmt->bind_result($login);
+
+    $stmt->fetch();
+
+    $stmt->close();
+
+    $mysqli->close();
+
+    return $firstname;
   }
 
   public function getLastname() {
-    return $this->lastname;
+    $mysqli = new mysqli('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+
+    if ($mysqli->connect_errno) {
+        die("Error connecting to the database: " . $mysqli->connect_error);
+    }
+    $stmt = $mysqli->prepare("SELECT lastname FROM users WHERE id = ?");
+
+    $stmt->bind_param("i", $id);
+
+    $stmt->execute();
+
+    $stmt->bind_result($lastname);
+
+    $stmt->fetch();
+
+    $stmt->close();
+
+    $mysqli->close();
+
+    return $lastname;
   }
 
 }
