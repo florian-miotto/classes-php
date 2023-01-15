@@ -8,13 +8,16 @@ class User {
   public $lastname;
   public $password;
   private $isConnected;
+  private $conn;
 
   public function __construct() {
+    $this->conn = new mysqli('localhost', 'root', '', 'classes');
     $this->id = 0;
     $this->login = '';
     $this->email = '';
     $this->firstname = '';
     $this->lastname = '';
+    // session_start();   // a tester
   }
 
   public function register($login, $password, $email, $firstname, $lastname) {
@@ -25,8 +28,6 @@ class User {
         // Préparation de la requête d'insertion
         $stmt = $mysqli->prepare("INSERT INTO utilisateurs (login, password, email, firstname, lastname) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param('sssss', $login, $password, $email, $firstname, $lastname);
-    
-        // Exécution de la requête
         $stmt->execute();
     
         // Récupération de l'ID de l'utilisateur créé
@@ -64,12 +65,15 @@ class User {
     $this->password = $password;
 
     $this->isConnected = true;
+    // $_SESSION["user"] = $this; //a tester
   }
 
   public function disconnect() {
     // Code de déconnexion de l'utilisateur en base de 
     
   global $mysqli;
+  $this->conn->close();
+  // session_destroy(); // a tester
 
   // Fermeture de la connexion à la base de données
   if ($user->isConnected()) {
@@ -87,18 +91,23 @@ class User {
   public function delete() {
    
         // Instanciation de l'objet mysqli avec les paramètres de connexion à la base de données
-        $mysqli = new mysqli('localhost', 'root', '', 'classes');
+        $conn  = new mysqli('localhost', 'root', '', 'classes');
       
         // Suppression de l'utilisateur en base de données
-        $query = "DELETE FROM utilisateurs WHERE id = ?";
-        $stmt = $mysqli->prepare($query);
-        $stmt->bind_param('i', $this->id);
+        $stmt = $conn->prepare( "DELETE FROM utilisateurs WHERE id = ?");
+       
+         $stmt->bind_param("i", $this->id);
         $stmt->execute();
-      var_dump($mysqli);
-        // Fermeture de la connexion à la base de données
-        $mysqli->close();
+        $affected_rows = $stmt->affected_rows;
+        $stmt->close();
+        $conn->close();
+        if($affected_rows){
+          echo "Utilisateur supprimé avec succès";
+        }else{
+          echo "Erreur lors de la suppression de l'utilisateur";
+        }
       }
-    // $this->disconnect();
+   
   
 
 
@@ -106,13 +115,14 @@ class User {
   public function update($login, $password, $email, $firstname, $lastname) {
     // Code de mise à jour de l'utilisateur en base de données
     global $mysqli;
-
+    $conn  = new mysqli('localhost', 'root', '', 'classes');
     // Mise à jour de l'utilisateur en base de données
-    $query = "UPDATE utilisateurs SET login = ?, password = ?, email = ?, firstname = ?, lastname = ? WHERE id = ?";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param('sssssi', $login, $password, $email, $firstname, $lastname, $this->id);
-    $stmt->execute();
 
+
+    $stmt = $this->conn->prepare("UPDATE utilisateurs SET login = ?, password = ?, email = ?, firstname = ?, lastname = ? WHERE id = ?");
+    $stmt->bind_param("sssssi", $login, $password, $email, $firstname, $lastname, $this->id);
+    $stmt->execute();
+    $stmt->close();
 
     // Mettre à jour les attributs de l'objet avec les nouvelles valeurs
     $this->login = $login;
@@ -124,47 +134,65 @@ class User {
 
   public function isConnected() {
     return $this->isConnected;
+    // return isset($_SESSION["user"]); // a tester
   }
 
-  // Attributs et méthodes existants...
 
-  public function getAllInfos() {
-   
-        global $mysqli;
-      
-        // Récupération de toutes les informations de l'utilisateur en base de données
-        $query = "SELECT * FROM utilisateurs WHERE id = ?";
-        $stmt = $mysqli->prepare($query);
-        $stmt->bind_param('i', $this->id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-      
-        if ($result->num_rows > 0) {
-          $row = $result->fetch_assoc();
-        //   echo "ID : " . $row['id'] . "\n";
-        //   echo "Nom : " . $row['name'] . "\n";
-        //   echo "Email : " . $row['email'] . "\n";
+//   public function getAllInfos($id) {
+//     $conn = new mysqli('localhost', 'root', '', 'classes');
+//     $stmt = $conn->prepare("SELECT * FROM utilisateurs WHERE id = ?");
+//     $stmt->bind_param("i", $id);
+//     $stmt->execute();
+//     $result = $stmt->get_result();
+//     if ($result->num_rows > 0) {
+//         $row = $result->fetch_assoc();
+//         return $row;
+//     } else {
+//         return false;
+//     }
+//     $conn->close();
+// }
+
+function setUserId($id) {/*????*/ 
+  global $user_id;
+  $user_id = $id;
+}
 
 
-          return $row;
-        } else {
-          return null;
-        }
-      
-    return array(
-      'id' => $this->id,
-      'login' => $this->login,
-      'email' => $this->email,
-      'firstname' => $this->firstname,
-      'lastname' => $this->lastname
-    );
-  }
+public function getAllInfos() {
+    global $user_id;
+    $conn = new mysqli('localhost', 'root', '', 'classes');
+    $stmt = $conn->prepare("SELECT id, login, email, firstname, lastname FROM utilisateurs WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        return array(
+          'id' => $row['id'],
+          'login' => $row['login'],
+          'email' => $row['email'],
+          'firstname' => $row['firstname'],
+          'lastname' => $row['lastname']
+        );
+    } else {
+        return false;
+    }
+    $conn->close();
+}
+In this example, the $user_id variable is defined outside of the getAllInfos() function, and it is referenced within the function by using the global keyword.
+You can change the value of $user_id before calling the function and it will use the updated value inside the function.
+
+
+
+
+
 
   function getLogin($id) {
 
-    $mysqli = new mysqli('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+    $conn = new mysqli('localhost', 'root', '', 'classes');
 
-    if ($mysqli->connect_errno) {
+    if ($conn->connect_errno) {
         die("Error connecting to the database: " . $mysqli->connect_error);
     }
     $stmt = $mysqli->prepare("SELECT login FROM users WHERE id = ?");
@@ -186,26 +214,27 @@ class User {
 
 
   public function getEmail() {
-    $mysqli = new mysqli('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
+    $mysqli = new mysqli('localhost', 'root', '', 'classes');
 
     if ($mysqli->connect_errno) {
         die("Error connecting to the database: " . $mysqli->connect_error);
     }
-    $stmt = $mysqli->prepare("SELECT Email FROM users WHERE id = ?");
+    $stmt = $mysqli->query("SELECT Email FROM users WHERE id = ?");
 
-    $stmt->bind_param("i", $id);
+    // $stmt->bind_param("i", $id);
 
-    $stmt->execute();
+    // $stmt->execute();
 
-    $stmt->bind_result($Email);
+    // $stmt->bind_result($Email);
 
-    $stmt->fetch();
-
-    $stmt->close();
-
+    // $stmt->fetch();
+    // $row = $stmt->fetch_assoc();
+    // $stmt->close();
+    printf($stmt);
+echo $stmt;
     $mysqli->close();
 
-    return $Email;
+    return $stmt;
   }
 
   public function getFirstname() {
@@ -256,13 +285,33 @@ class User {
 
 }
 
-// $user = new User();
+$user = new User(); ?>
+<form method="post">
+    <label for="user_id">Enter User ID:</label>
+    <input type="text" id="user_id" name="user_id">
+    <input type="submit" value="Submit">
+</form>
+
+
+
+<?php 
+
+//test de delete concluant
+/*$user = new User();
+$user->id = 3;
+$user->delete();*/
+
 
 // Test de la méthode register avec des données de test
-// $infos = $user->register('2test', '2test', 'te2st@example.com', '2Test', '2User');
+/*$user = new User();
+ $user->register('2test', '2test', 'te2st@example.com', '2Test', '2User');
 
-// Affichage des informations de l'utilisateur créé
-// print_r($infos);
+print_r($user);*/
+//update ok 
+/*$user = new User();
+$user->id = 5;
+$user->update("JohnDoe", "newpassword", "johndoe@example.com", "John", "Doe");*/
+
 
 // // Test de la méthode connect avec des données de test
 // $user->connect('test', 'test');
@@ -286,37 +335,33 @@ class User {
 
 
 // Connexion à la base de données de développement
-$mysqli = new mysqli('localhost', 'root', '', 'classes');
+// $mysqli = new mysqli('localhost', 'root', '', 'classes');
 
 // Instanciation d'un objet User
-$user = new User();
-
-// Connexion de l'utilisateur
-$user->connect('3333', '33333333');
-var_dump($user->connect('3333', '33333333'));
-
-// Mise à jour des informations de l'utilisateur
-$user->update('nouveau_login', 'nouveau_password', 'nouvel_email', 'nouveau_firstname', 'nouveau_lastname');
+// $user = new User();
+// $user->getEmail(1);
 
 // Vérification que les informations de l'utilisateur ont bien été mises à jour en base de données
-$query = "SELECT * FROM utilisateurs WHERE id = ?";
-$stmt = $mysqli->prepare($query);
-$stmt->bind_param('i', $user->id);
-$stmt->execute();
-$result = $stmt->get_result();
+// $query = "SELECT * FROM utilisateurs WHERE id = ?";
+// $stmt = $mysqli->prepare($query);
+// $stmt->bind_param('i', $user->id);
+// $stmt->execute();
+// $result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
-  $row = $result->fetch_assoc();
-  if ($row['login'] == 'nouveau_login' && $row['password'] == 'nouveau_password' && $row['email'] == 'nouvel_email' && $row['firstname'] == 'nouveau_firstname' && $row['lastname'] == 'nouveau_lastname') {
-    echo "Informations mises à jour en base de données\n";
-  } else {
-    echo "Erreur de mise à jour en base de données\n";
-  }
-} else {
-  echo "Utilisateur non trouvé en base de données\n";
-}
+// if ($result->num_rows > 0) {
+//   $row = $result->fetch_assoc();
+//   if ($row['login'] == 'nouveau_login' && $row['password'] == 'nouveau_password' && $row['email'] == 'nouvel_email' && $row['firstname'] == 'nouveau_firstname' && $row['lastname'] == 'nouveau_lastname') {
+//     echo "Informations mises à jour en base de données\n";
+//   } else {
+//     echo "Erreur de mise à jour en base de données\n";
+//   }
+// } else {
+//   echo "Utilisateur non trouvé en base de données\n";
+// }
 
 // Fermeture de la connexion à la base de données
-$mysqli->close();
+// $mysqli->close();
 
 
+
+?>

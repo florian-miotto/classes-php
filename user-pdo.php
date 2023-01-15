@@ -51,7 +51,7 @@ class Userpdo {
       // set the PDO error mode to exception
       $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
       
-      $sql = "INSERT INTO utilisateurs (login, password, email, firstname, lastname) ";
+      $sql = "INSERT INTO utilisateurs (`login`, `password`, `email`, `firstname`, `lastname`) ";
         // $sql->bind_param('sssss', $login, $password, $email, $firstname, $lastname);
   
       // use exec() because no results are returned
@@ -73,7 +73,7 @@ class Userpdo {
     $pdo = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
 
     // Récupération de l'utilisateur en base de données
-    $query = "SELECT * FROM utilisateurs WHERE login = ? AND password = ?";
+    $query = "SELECT * FROM utilisateurs WHERE 'login' = ? AND 'password' = ?";
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(1, $login);
     $stmt->bindParam(2, $password);
@@ -93,7 +93,7 @@ class Userpdo {
   }
 
   public function disconnect() {
-    // Code de déconnexion de l'utilisateur en base de 
+   
     
   global $mysqli;
 
@@ -110,10 +110,8 @@ class Userpdo {
     // Prepare the SQL statement
     $stmt = $dbh->prepare("DELETE FROM users WHERE id = :id");
 
-    // Bind the parameter
     $stmt->bindParam(':id', $id);
 
-    // Execute the statement
     $stmt->execute();
 
     // Close the connection
