@@ -206,10 +206,6 @@ public function getAllInfos() {
 // $user->getAllInfos();
 
 
-
-
-
-
 //test de delete concluant---------------------------------------------
 // $user = new User();
 // $user->id = 7;

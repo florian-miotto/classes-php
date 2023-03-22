@@ -7,6 +7,7 @@ class Userpdo {
   public $email;
   public $firstname;
   public $lastname;
+  
 
   public function __construct() {
     $this->id = 0;
@@ -14,122 +15,131 @@ class Userpdo {
     $this->email = '';
     $this->firstname = '';
     $this->lastname = '';
+    
   }
 
   public function register($login, $password, $email, $firstname, $lastname) {
-
-  
-  
-
-    // // Création de l'utilisateur en base de données
-    // $query = "INSERT INTO utilisateurs (login, password, email, firstname, lastname) VALUES (:login, :password, :email, :firstname, :lastname)";
-    // $stmt = $pdo->prepare($query);
-    // $stmt->bindParam(':login', $login);
-    // $stmt->bindParam(':password', $password);
-    // $stmt->bindParam(':email', $email);
-    // $stmt->bindParam(':firstname', $firstname);
-    // $stmt->bindParam(':lastname', $lastname);
-    // $stmt->execute();
-
-    // // Récupération de l'ID de l'utilisateur créé
-    // $this->id = $pdo->lastInsertId();
-
-    // // Récupération de toutes les informations de l'utilisateur
-    // $query = "SELECT * FROM utilisateurs WHERE id = ?";
-    // $stmt = $pdo->prepare($query);
-    // $stmt->bindParam(1, $this->id);
-    // $stmt->execute();
-    // $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Connexion à la base de données
+    $pdo = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
 
  
 
-    // return $row; 
-    
-    
-    try {
-      $conn = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
-      // set the PDO error mode to exception
-      $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      
-      $sql = "INSERT INTO utilisateurs (`login`, `password`, `email`, `firstname`, `lastname`) ";
-        // $sql->bind_param('sssss', $login, $password, $email, $firstname, $lastname);
-  
-      // use exec() because no results are returned
-      $conn->exec($sql);
-      echo "New record created successfully";
-    } catch(PDOException $e) {
-      echo $sql . "<br>" . $e->getMessage();
+    // Création de l'utilisateur en base de données
+    $query = "INSERT INTO utilisateurs (`login`, `password`, `email`, `firstname`, `lastname`) VALUES (?, ?, ?, ?, ?)";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(1, $login);
+    $stmt->bindParam(2, $password);
+    $stmt->bindParam(3, $email);
+    $stmt->bindParam(4, $firstname);
+    $stmt->bindParam(5, $lastname);
+    $stmt->execute();
+    // Vérification si l'utilisateur existe déjà
+
+    $stmt = $pdo->prepare("SELECT * FROM utilisateurs WHERE login = ?");
+    $stmt->bindParam(1, $login);
+    $stmt->execute();
+
+    if ($stmt->rowCount()>0){
+
+      echo "Utilisateur déjà existant";
     }
-    
-    $conn = null;
+    else{
+    echo "Utilisateur créé avec succès";
+    //récupération de l'id de l'utilisateur créé
+    $id = $pdo->lastInsertId();
+    // Mise à jour des attributs de l'objet avec les valeurs de l'utilisateur créé
+    $this->id = $id;
+    $this->login = $login;
+    $this->email = $email;
+    $this->firstname = $firstname;
+    $this->lastname = $lastname;
   }
-
-
-
-
+  return array(
+    'id' => $this->id,
+    'login' => $this->login,
+    'email' => $this->email,
+    'firstname' => $this->firstname,
+    'lastname' => $this->lastname
+  );
+  }
 
   public function connect($login, $password) {
     // Connexion à la base de données
     $pdo = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     // Récupération de l'utilisateur en base de données
-    $query = "SELECT * FROM utilisateurs WHERE 'login' = ? AND 'password' = ?";
+    $query = "SELECT * FROM utilisateurs WHERE login = ? AND password = ?";
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(1, $login);
     $stmt->bindParam(2, $password);
     $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Fermeture de la connexion à la base de donné
-    try {
-      $pdo = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
-      // set the PDO error mode to exception
-      $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-      echo "Connected successfully";
-    } catch(PDOException $e) {
-      echo "Connection failed: " . $e->getMessage();
+    if ($row) {
+        $this->id = $row['id'];
+        $this->login = $row['login'];
+        $this->email = $row['email'];
+        $this->firstname = $row['firstname'];
+        $this->lastname = $row['lastname'];
+        echo "Utilisateur connecté($this->login)";
+    } else {
+        echo "Erreur de connexion : Identifiants incorrects";
     }
-   
-  }
+}
 
   public function disconnect() {
-   
-    
-  global $mysqli;
+     // Réinitialisation des attributs de l'objet utilisateur
+      $this->id = 0;
+      $this->login = '';
+      $this->email = '';
+      $this->firstname = '';
+      $this->lastname = '';
+      echo "utilisateur déconnecté";
 
-  $mysqli = null;
+
+
   }
 
   public function delete() {
-    // Connect to the database
-    $dbh = new  PDO('mysql:host=localhost;dbname=classes', 'root', '');
+    // Vérification si l'utilisateur est connecté
+    if ($this->id > 0) {
+        // Connexion à la base de données en utilisant PDO
+        $pdo = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
 
-    // Get the user ID from the global variable or the GET parameter
-    $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
+        // Préparation de la requête de suppression
+        $stmt = $pdo->prepare("DELETE FROM utilisateurs WHERE id = :id");
+        $stmt->bindParam(':id', $this->id);
+        $stmt->execute();
 
-    // Prepare the SQL statement
-    $stmt = $dbh->prepare("DELETE FROM users WHERE id = :id");
+        // Vérification de la suppression de l'utilisateur
+        if ($stmt->rowCount() > 0) {
+            echo "Utilisateur supprimé avec succès";
+        } else {
+            echo "Erreur lors de la suppression de l'utilisateur";
+        }
 
-    $stmt->bindParam(':id', $id);
-
-    $stmt->execute();
-
-    // Close the connection
-    $dbh = null;
+        // Déconnexion de l'utilisateur
+        $this->disconnect();
+    } else {
+        echo "Aucun utilisateur connecté, impossible de supprimer";
+    }
 }
+
 
 
 function update($login, $password, $email, $firstname, $lastname) {
   // Connect to the database
-  $dbh = PDO('mysql:host=localhost;dbname=classes', 'root', '');
+  $pdo = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
   
   // Hash the password for storage in the database
-  $password = password_hash($password, PASSWORD_DEFAULT);
+  // $password = password_hash($password, PASSWORD_DEFAULT);
 
   // Prepare the SQL statement
-  $stmt = $dbh->prepare("UPDATE users SET password = :password, email = :email, firstname = :firstname, lastname = :lastname WHERE login = :login");
+  $stmt = $pdo->prepare("UPDATE utilisateurs SET login =:login, password = :password, email = :email, firstname = :firstname, lastname = :lastname WHERE id = :id");
 
   // Bind the parameters
+  $stmt->bindParam(':id', $this->id);
   $stmt->bindParam(':login', $login);
   $stmt->bindParam(':password', $password);
   $stmt->bindParam(':email', $email);
@@ -139,107 +149,70 @@ function update($login, $password, $email, $firstname, $lastname) {
   // Execute the statement
   $stmt->execute();
 
-  // Close the connection
-  $dbh = null;
+  // Check if the user was updated
+  if ($stmt->rowCount() > 0) {
+    echo "Utilisateur mis à jour avec succès";
+  
+  } else {
+    echo "Erreur lors de la mise à jour de l'utilisateur";
+
+  }
+
 }
+
+
 function getAllInfos() {
  
   $dbh = new PDO('mysql:host=localhost;dbname=classes', 'root', '');
 
-  
-  $stmt = $dbh->prepare("SELECT * FROM users");
+  $stmt = $dbh->prepare("SELECT * FROM utilisateurs");
 
- 
   $stmt->execute();
 
- 
-  $rows = $stmt->fetchAll();
+    // Fetch the result
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
- 
-  $dbh = null;
-
+    print_r($result);
+  if ($result) {
+    return array(
+      'id' => $result['id'],
+      'login' => $result['login'],
+      'email' => $result['email'],
+      'firstname' => $result['firstname'],
+      'lastname' => $result['lastname']
+    );
+    print_r($result);
+  } else {
+    return false;
+  }
   
-  return $rows;
 }
 
 
 
 function getLogin() {
-  
-  $dbh = new PDO('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
-  
-  $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
 
 
-  $stmt = $dbh->prepare("SELECT login FROM users WHERE id = :id");
-
-  $stmt->bindParam(':id', $id);
-
-  $stmt->execute();
-
-  $row = $stmt->fetch();
-
-  $dbh = null;
-
-  return $row['login'];
+  return $this->login;
 }
 
 public function getEmail() {
-  $dbh = new PDO('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
-  
-  $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
 
 
-  $stmt = $dbh->prepare("SELECT login FROM users WHERE id = :id");
-
-  $stmt->bindParam(':id', $id);
-
-  $stmt->execute();
-
-  $row = $stmt->fetch();
-
-  $dbh = null;
-
-  return $row['email'];
+  return $this->email;
 }
 
 public function getFirstname() {
-  $dbh = new PDO('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
   
-  $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
+  
 
 
-  $stmt = $dbh->prepare("SELECT login FROM users WHERE id = :id");
-
-  $stmt->bindParam(':id', $id);
-
-  $stmt->execute();
-
-  $row = $stmt->fetch();
-
-  $dbh = null;
-
-  return $row['firstname'];
+  return $this->firstname;
 }
 
 public function getLastname() {
-  $dbh = new PDO('mysql:host=localhost;dbname=yourdbname', 'username', 'password');
   
-  $id = isset($_GET['id']) ? $_GET['id'] : $user_id;
-
-
-  $stmt = $dbh->prepare("SELECT login FROM users WHERE id = :id");
-
-  $stmt->bindParam(':id', $id);
-
-  $stmt->execute();
-
-  $row = $stmt->fetch();
-
-  $dbh = null;
-
-  return $row['lastname'];
-}
+  return $this->lastname;
 
 
 
@@ -247,12 +220,21 @@ public function getLastname() {
 
 
 }
+  
+  }
 $user = new Userpdo();
 // $user->connect('test', 'test');
 
 
     
-    $infos = $user->register('8test', '8test', '8te2st@example.com', '82Test', '82User');
+    // $infos = $user->register('81test', '8test', '8te2st@example.com', '82Test', '82User');
+    $infos = $user->connect('4test', '2test');
+    // $infos = $user->disconnect('81test', '8test');
+    // $infos = $user->delete('81test', '8test');
+    
+    $user->id = 5;
+    // $user->update("Joroe", "newprord", "jofhndoe@example.com", "Jofhn", "Dfoe");
+    // $user->getAllInfos();
 
     // Affichage des informations de l'utilisateur créé
     print_r($infos);
